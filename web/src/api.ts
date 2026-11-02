@@ -1,5 +1,6 @@
-const BASE_URL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api`
+const envApiUrl = (import.meta as any).env?.VITE_API_URL;
+const BASE_URL = envApiUrl
+  ? `${envApiUrl.replace(/\/$/, '')}/api`
   : '/api';
 
 export function getAuthToken(): string | null {
