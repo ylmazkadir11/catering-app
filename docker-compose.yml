@@ -1,0 +1,64 @@
+services:
+  # PostgreSQL Veritabanı
+  postgres:
+    image: postgres:16-alpine
+    container_name: catering_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: catering_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-catering_pass_2024}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: catering_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: catering_db
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:-catering_pass_2024}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_change_in_production}
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: ${NODE_ENV:-production}
+      EXPIRY_ALERT_DAYS: 30
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Web Frontend (React + Vite + Nginx)
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: catering_web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+    driver: local
+

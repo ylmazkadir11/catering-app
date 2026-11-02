@@ -1,0 +1,14 @@
+{
+  "name": "catering-system",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "web": "cd web && npm run dev",
+    "web:build": "cd web && npm run build",
+    "backend": "cd backend && npm run dev",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  }
+}
+
